@@ -1,7 +1,7 @@
-const config = {
+export default {
   plugins: {
-    "@tailwindcss/postcss": {},
+    // 🛡️ 注意：这里必须改用新包名 @tailwindcss/postcss
+    '@tailwindcss/postcss': {},
+    'autoprefixer': {},
   },
 };
-
-export default config;

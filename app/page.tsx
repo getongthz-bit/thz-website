@@ -1,5 +1,7 @@
 "use client";
-
+<div className="bg-red-500 text-white p-20 text-[50px] font-black">
+  如果看到这段红底白字，说明 Tailwind 终于复活了！
+</div>
 import "./globals.css";
 import Link from 'next/link'; 
 import { useState } from 'react';
@@ -16,10 +18,28 @@ export default function Home() {
     { name: "联系我们", href: "#contact" },
   ];
 
-  const team = [
-    { id: 1, name: "胖猫", role: "算法工程师", img: "/images/p3.jpg" },
-    { id: 2, name: "范小勤",role: "算法工程师", img: "/images/p2.jpg" },
-    { id: 3, name: "表哥", role: "算法工程师", img: "/images/p1.jpg" },
+ const team = [
+    { 
+      id: 1, 
+      name: "胖猫", 
+      role: "纯爱战神", 
+      img: "/images/p3.jpg", 
+      quote: "根本你不懂得爱我"
+    },
+    { 
+      id: 2, 
+      name: "范小勤", 
+      role: "开挖掘机学家", 
+      img: "/images/p2.jpg", 
+      quote: "我靠，开挖掘机。"
+    },
+    { 
+      id: 3, 
+      name: "表哥", 
+      role: "捉羊至尊", 
+      img: "/images/p1.jpg", 
+      quote: "灰太狼，是你吗？"
+    },
   ];
 
   const projects = [
@@ -125,20 +145,19 @@ export default function Home() {
               <div key={member.id} className="flex flex-col items-center group w-[220px]">
                 
                 {/* 完美锁死正圆的头像框保持不变 */}
+                {/* 🛡️ 直接写死 5px 的底部边距，看它有没有反应 */}
                 <div 
-                  className="rounded-full border-4 border-[#38B44A]/50 group-hover:border-[#38B44A] overflow-hidden mb-6 transition-all transform group-hover:scale-105 shadow-2xl flex-shrink-0 flex items-center justify-center m-auto"
-                  style={{ width: "180px", height: "180px" }}
+                  className="rounded-full border-4 border-[#38B44A]/50 overflow-hidden transition-all"
+                  style={{ width: "180px", height: "180px", marginBottom: "20px" }} 
                 >
-                  <img 
-                    src={member.img} 
-                    alt={member.name} 
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }} 
-                  />
+                  <img src={member.img} alt={member.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 </div>
 
-                <h6 className="text-xl font-bold mb-1">{member.name}</h6>
+                <h6 className="text-2xl font-bold -mt-4 mb-1 text-grid-green">
+                {member.name}
+                </h6>
                 <p className="text-xs tracking-widest uppercase mb-4 font-black">{member.role}</p>
-                <p className="text-sm italic opacity-80 text-center">“致力于太赫兹领域的精度突破。”</p>
+                <p className="text-sm italic opacity-80 text-center">“{member.quote}”</p>
               </div>
             ))}
           </div>
