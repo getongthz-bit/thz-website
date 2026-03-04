@@ -9,7 +9,7 @@ export default function Home() {
 
   const navLinks = [
     { name: "首页", href: "#" },
-    { name: "关于我们", href: "#about" },
+    { name: "关于我们", href: "/about" },
     { name: "技术服务", href: "#services" },
     { name: "项目案例", href: "#portfolio" },
     { name: "客户评价", href: "#testimonials" },
@@ -47,14 +47,18 @@ export default function Home() {
           <div className="flex items-center justify-end flex-1" style={{ gap: "30px", marginRight: "80px" }}>
             
             {/* 菜单列表 */}
-            <ul className="flex flex-row list-none m-0 p-0 text-base md:text-lg font-bold uppercase tracking-widest text-[#38B44A]">
+            <ul className="flex flex-row list-none m-0 p-0 text-base md:text-lg font-bold uppercase tracking-widest">
               {navLinks.map((link) => (
-                <li 
-                  key={link.name} 
-                  style={{ marginRight: "40px" }} 
-                  className="hover:brightness-150 cursor-pointer transition-all border-b-2 border-transparent hover:border-[#38B44A] pb-1 whitespace-nowrap"
-                >
-                  {link.name}
+                <li key={link.name} style={{ marginRight: "40px" }}>
+                  
+                  {/* 🛡️ 核心修复：直接给 Link 强行指定绿色 text-[#38B44A] 和去下划线 no-underline */}
+                  <Link 
+                    href={link.href}
+                    className="text-[#38B44A] no-underline hover:brightness-150 cursor-pointer transition-all border-b-2 border-transparent hover:border-[#38B44A] pb-1 whitespace-nowrap block"
+                  >
+                    {link.name}
+                  </Link>
+
                 </li>
               ))}
             </ul>
