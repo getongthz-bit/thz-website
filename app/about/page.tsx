@@ -45,9 +45,9 @@ export default function AboutPage() {
           <div style={{ flexShrink: 0 }}>
             <Link href="/">
               <img 
-                src="/GetongLogo.png" 
+                src="/images/logo1.png" 
                 alt="GRIDLINK" 
-                style={{ height: "45px", width: "auto", display: "block" }} 
+                style={{ height: "140px", width: "auto", display: "block" }} 
               />
             </Link>
           </div>
