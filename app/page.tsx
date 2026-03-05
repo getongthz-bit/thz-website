@@ -1,13 +1,42 @@
 "use client";
-<div className="bg-red-500 text-white p-20 text-[50px] font-black">
-  如果看到这段红底白字，说明 Tailwind 终于复活了！
-</div>
+
 import "./globals.css";
 import Link from 'next/link'; 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export default function Home() {
+  const [activeProduct, setActiveProduct] = useState(0);
+  const autoPlayTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const resumeTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [filter, setFilter] = useState('all');
+  // 1. 启动自动播放的函数
+  const startAutoPlay = () => {
+    stopAutoPlay(); // 先清理旧的，防止重叠
+    autoPlayTimerRef.current = setInterval(() => {
+      setActiveProduct((prev) => (prev + 1) % products.length);
+    }, 8000); // 正常每 8 秒轮播一次
+  };
+  // 2. 停止所有计时器的函数
+  const stopAutoPlay = () => {
+    if (autoPlayTimerRef.current) clearInterval(autoPlayTimerRef.current);
+    if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+  };
+  // 3. 核心交互函数：点击后暂停 10 秒再恢复
+  const handleInteraction = (index?: number) => {
+    stopAutoPlay(); // 立即停止当前滚动
+    
+    if (typeof index === 'number') {
+      setActiveProduct(index); // 如果点击的是进度条，切换到对应图片
+    }
+    // 设置 20 秒后继续
+    resumeTimerRef.current = setTimeout(() => {
+      startAutoPlay();
+    }, 20000); // 10000 毫秒 = 10 秒
+  };
+    useEffect(() => {
+    startAutoPlay();
+    return () => stopAutoPlay(); // 页面关掉时清理内存
+  }, []);
 
   const navLinks = [
     { name: "首页", href: "#" },
@@ -18,29 +47,80 @@ export default function Home() {
     { name: "联系我们", href: "#contact" },
   ];
 
- const team = [
-    { 
-      id: 1, 
-      name: "胖猫", 
-      role: "纯爱战神", 
-      img: "/images/p3.jpg", 
-      quote: "根本你不懂得爱我"
+
+  const products = [
+    {
+      id: 1,
+      title: "格通太赫兹外墙检测雷达",
+      tag: "外墙检测",
+      img: "/images/THZD.png",
+      desc: "精准探测外墙隐患，太赫兹雷达守护安全",
+      features: ["更好的穿透力", "更高的分辨率", "更好的环境适应性", "即时成像"]
     },
-    { 
-      id: 2, 
-      name: "范小勤", 
-      role: "开挖掘机学家", 
-      img: "/images/p2.jpg", 
-      quote: "我靠，开挖掘机。"
+    {
+      id: 2,
+      title: "格通太赫兹心电雷达",
+      tag: "健康医疗",
+      img: "/images/health.png",
+      desc: "实现更精准、更连续无间断的生命体征监测功能",
+      features: ["无感测量", "可靠稳定", "体积小，成本低", "安全隐私"]
     },
-    { 
-      id: 3, 
-      name: "表哥", 
-      role: "捉羊至尊", 
-      img: "/images/p1.jpg", 
-      quote: "灰太狼，是你吗？"
-    },
+    // 你可以继续增加更多产品...
   ];
+
+  
+    
+   
+
+    
+
+
+
+  const team = [
+      { 
+        id: 1, 
+        name: "布兰卡 武切蒂奇", 
+        role: "格通科技董事、首席科学家 ", 
+        img: "/images/布兰卡.png", 
+        honors: [
+                "中华入民共和国国家友谊奖",
+                "全球WIFI发明人之一",
+                "中组部千人计划外国专家",
+                "中国科学院第一批特聘外籍专家",
+                "澳大利亚科学院皇家桂冠院士",
+                "澳大利亚国家工程院院士",
+                "IEEE FELLOW 国际电气工程师协会会士"
+        ]
+      },
+      { 
+        id: 2, 
+        name: "黄文著", 
+        role: "格通科技首席执行官", 
+        img: "/images/黄文著.png", 
+        honors: [
+          "全国青年联合会委员",
+          "全国工商联物联网委员会委员",
+          "福建省百人计划引进专家",
+          "福建省青年联合会常委",
+          "福州市政协委员"
+        ]
+      },
+      { 
+        id: 3, 
+        name: "李永会", 
+        role: "格通科技董事、首席科学家", 
+        img: "/images/李永会.png", 
+        honors: [
+          "全国青年联合会委员",
+          "全国工商联物联网委员会委员",
+          "福建省百人计划引进专家",
+          "福建省青年联合会常委",
+          "福州市政协委员"
+        ]
+      },
+    ];
+
+
 
   const projects = [
     { id: 1, cat: 'building', title: '外墙缺陷扫描', desc: '亚毫米级空鼓检测', img: '/images/men.jpg' },
@@ -54,12 +134,12 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-[#0B0E14] text-[#38B44A] font-sans overflow-x-hidden relative">
       
-      {/* --- 1. 绝对定位导航栏：彻底解除隐藏封印 --- */}
+      {/* 绝对定位导航栏*/}
       <header className="absolute top-0 left-0 w-full z-[100]">
-        <nav className="container mx-auto flex flex-wrap justify-between items-center px-4 md:px-12 py-8">
+        <nav className="w-full flex flex-wrap justify-between items-center px-4 md:px-8 py-1">
           
           <div className="flex-shrink-0">
-            <img src="/GetongLogo.png" alt="GRIDLINK" className="h-12 md:h-16 w-auto object-contain transition-transform hover:scale-105" />
+            <img src="/GetongLogo.png" alt="GRIDLINK" className="h-32 md:h-48 w-auto object-contain transition-transform hover:scale-105" />
           </div>
           
           {/* 右侧：菜单 + 按钮 */}
@@ -96,7 +176,7 @@ export default function Home() {
 
       {/* --- 2. Hero 区域 --- */}
       <section className="relative w-full h-[500px] flex items-center justify-center bg-cover bg-fixed bg-center" 
-               style={{ backgroundImage: "url('/images/banner.jpg')" }}>
+               style={{ backgroundImage: "url('/images/Topbg.jpg')" }}>
         <div className="absolute inset-0 bg-black/80 z-0"></div>
         <div className="relative z-10 text-center px-4 mt-16 text-[#38B44A]">
           <h2 className="text-4xl md:text-6xl font-light mb-4 uppercase tracking-tighter">
@@ -106,58 +186,147 @@ export default function Home() {
             引领太赫兹无损检测新时代，看见 <span className="font-black brightness-125">隐形</span> 之伤。
           </p>
           <div className="mt-8 animate-bounce">
-             <img src="/images/down.png" alt="Scroll" className="w-8 mx-auto opacity-70" style={{ filter: 'opacity(0.5) drop-shadow(0 0 0 #38B44A)' }} />
+          <a 
+              href="#about" 
+              className="cursor-pointer hover:brightness-150 transition-all inline-block"
+            >
+              <img 
+                src="/images/down.png" 
+                alt="Scroll" 
+                className="w-8 mx-auto opacity-70" 
+                style={{ filter: 'opacity(0.5) drop-shadow(0 0 0 #38B44A)' }} 
+              />
+            </a>
+
           </div>
         </div>
       </section>
 
-      {/* --- 3. 技术优势 --- */}
-      <section id="about" className="py-16 bg-white">
-        <div className="container mx-auto px-6 flex flex-col md:flex-row items-center gap-16">
-          <div className="w-full md:w-1/2">
-            <img src="/images/tv.png" alt="Technology" className="w-full max-w-[420px] mx-auto drop-shadow-2xl" />
+      {/* --- 3. 技术优势：自动播放单卡片模式 --- */}
+      <section id="about" className="pt-12 pb-20 bg-white scroll-mt-20">
+        <div className="container mx-auto px-6">
+          <div className="mb-4">
+            <small className="font-black tracking-widest block mb-2 uppercase text-[#38B44A]">PRODUCT SHOWCASE</small>
+            <h3 className="text-4xl font-bold text-[#38B44A] border-l-4 border-[#38B44A] pl-6">核心技术与产品</h3>
           </div>
-          <div className="w-full md:w-1/2 text-[#38B44A]">
-            <small className="font-black tracking-widest block mb-2 uppercase text-base">ABOUT GRIDLINK</small>
-            <h3 className="text-4xl font-bold mb-6 border-l-4 border-[#38B44A] pl-6">核心技术优势</h3>
-            <ul className="space-y-4 mb-8 font-bold text-lg list-none p-0">
-              <li className="flex items-center gap-4">
-                <span className="w-7 h-7 bg-[#0B0E14] border border-[#38B44A] text-[#38B44A] rounded-full flex items-center justify-center text-[10px] shadow-lg flex-shrink-0">✓</span>
-                亚毫米级精度：捕捉微米级结构隐患
-              </li>
-              <li className="flex items-center gap-4">
-                <span className="w-7 h-7 bg-[#0B0E14] border border-[#38B44A] text-[#38B44A] rounded-full flex items-center justify-center text-[10px] shadow-lg flex-shrink-0">✓</span>
-                非接触探测：对人体与环境 100% 安全
-              </li>
-            </ul>
-          </div>
-        </div>
-      </section>
 
-      {/* --- 4. 专家团队 --- */}
-      <section id="team" className="py-16 bg-[#0B0E14] border-t border-[#38B44A]/20">
-        <div className="container mx-auto px-6 text-center text-[#38B44A]">
-          <h3 className="text-4xl font-light mb-2 uppercase">我们的 <span className="font-bold">专家团队</span></h3>
-          <div className="w-20 h-1 bg-[#38B44A] mx-auto mb-16"></div>
-          
-          <div className="flex flex-row flex-wrap justify-center items-start w-full" style={{ gap: "150px" }}>
-            {team.map((member) => (
-              <div key={member.id} className="flex flex-col items-center group w-[220px]">
-                
-                {/* 完美锁死正圆的头像框保持不变 */}
-                {/* 🛡️ 直接写死 5px 的底部边距，看它有没有反应 */}
-                <div 
-                  className="rounded-full border-4 border-[#38B44A]/50 overflow-hidden transition-all"
-                  style={{ width: "180px", height: "180px", marginBottom: "20px" }} 
-                >
-                  <img src={member.img} alt={member.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          {/*  轮播主容器：固定高度防止跳动 */}
+          <div className="relative w-full min-h-[600px] md:min-h-[450px]">
+            {products.map((item, index) => (
+              <div 
+                key={item.id} 
+                //  点击整个卡片触发 10 秒暂停及切换
+                onClick={() => handleInteraction(index)}
+                className={`absolute inset-0 w-full h-full transition-all duration-[2500ms] ease-in-out flex flex-col md:flex-row bg-[#0B0E14] rounded-[32px] overflow-hidden shadow-2xl border border-[#38B44A]/20 cursor-pointer ${
+                  index === activeProduct 
+                    ? "opacity-100 translate-x-0 z-10" 
+                    : "opacity-0 translate-x-10 z-0 pointer-events-none"
+                }`}
+              >
+                {/* 左侧：图片区域 */}
+                <div className="w-full md:w-2/5 bg-white/5 flex items-center justify-center p-12">
+                  <img 
+                    src={item.img} 
+                    alt={item.title} 
+                    className="w-full h-auto max-h-[280px] object-contain drop-shadow-[0_0_30px_rgba(56,180,74,0.4)] transition-transform duration-700 hover:scale-105" 
+                  />
                 </div>
 
-                <h6 className="text-2xl font-bold -mt-4 mb-1 text-grid-green">
-                {member.name}
+                {/* 右侧：文字内容区域 */}
+                <div className="w-full md:w-3/5 p-10 flex flex-col justify-center">
+                  <div className="flex items-center gap-3 mb-6">
+                    <span className="px-3 py-1 bg-[#38B44A] text-[#0B0E14] text-[10px] font-black rounded-full">
+                      {item.tag}
+                    </span>
+                    <span className="text-[#38B44A]/40 text-xs font-mono">
+                      0{index + 1} / 0{products.length}
+                    </span>
+                  </div>
+                  
+                  <h4 className="text-3xl font-bold text-[#38B44A] mb-4">{item.title}</h4>
+                  <p className="text-[#38B44A]/80 text-base mb-8 leading-relaxed max-w-xl">
+                    {item.desc}
+                  </p>
+                  
+                  {/* 功能列表网格 */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {item.features.map((feature, fIdx) => (
+                      <div key={fIdx} className="flex items-center gap-3 text-sm font-bold text-[#38B44A]">
+                        <span className="w-6 h-6 bg-[#38B44A] text-[#0B0E14] rounded-full flex items-center justify-center text-[10px]">✓</span>
+                        {feature}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* 🛡️ 底部进度条/指示器 */}
+          <div className="flex justify-center gap-4 mt-10">
+            {products.map((_, index) => (
+              <button
+                key={index}
+                // ✅ 点击小条也触发 10 秒暂停逻辑
+                onClick={() => handleInteraction(index)}
+                className={`h-1.5 transition-all duration-500 rounded-full ${
+                  index === activeProduct ? "w-12 bg-[#38B44A]" : "w-3 bg-[#38B44A]/20"
+                }`}
+                aria-label={`Go to product ${index + 1}`}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* --- 4. 联合创始人：荣誉陈列版 --- */}
+      <section id="team" className="pt-4 pb-16 bg-[#0B0E14] border-t border-[#38B44A]/20">
+        <div className="container mx-auto px-6 text-center text-[#38B44A]">
+          
+          <h3 className="text-4xl font-light mb-2 uppercase">
+            <span className="font-bold">联合创始人</span>
+          </h3>
+          <div className="w-48 h-1 bg-[#38B44A] mx-auto mb-16"></div>
+          
+          <div className="flex flex-row flex-wrap justify-center items-start w-full" style={{ gap: "100px" }}>
+            {team.map((member) => (
+              // 🛡️ 宽度增加到 280px 以容纳较长的荣誉头衔
+              <div key={member.id} className="flex flex-col items-center group w-[280px]">
+                
+                {/* 🛡️ 头像框：方正、发光，比例适配 541:678 (约 180x225) */}
+                <div 
+                  className="border-2 border-[#38B44A]/80 overflow-hidden transition-all shadow-[0_0_20px_rgba(56,180,74,0.4)] group-hover:scale-105 duration-500"
+                  style={{ width: "180px", height: "225px", marginBottom: "24px" }} 
+                >
+                  <img 
+                    src={member.img} 
+                    alt={member.name} 
+                    className="w-full h-full object-cover" 
+                  />
+                </div>
+
+                {/* 🛡️ 姓名：删除了 -mt-4 避免重叠 */}
+                <h6 className="text-2xl font-bold mb-1 text-[#38B44A]">
+                  {member.name}
                 </h6>
-                <p className="text-xs tracking-widest uppercase mb-4 font-black">{member.role}</p>
-                <p className="text-sm italic opacity-80 text-center">“{member.quote}”</p>
+                
+                {/* 🛡️ 职位：加粗显示 */}
+                <p className="text-xs tracking-widest uppercase mb-4 font-black opacity-90">
+                  {member.role}
+                </p>
+
+                {/* 🛡️ 核心修改：荣誉陈列区域 */}
+                <div className="flex flex-col items-center gap-1 w-full">
+                  {member.honors.map((honor, hIdx) => (
+                    <p 
+                      key={hIdx} 
+                      className="text-[11px] leading-tight text-center text-[#38B44A]/90 font-medium tracking-tighter"
+                    >
+                      {honor}
+                    </p>
+                  ))}
+                </div>
+
               </div>
             ))}
           </div>
