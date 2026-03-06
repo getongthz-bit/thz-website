@@ -3,12 +3,31 @@
 import "./globals.css";
 import Link from 'next/link'; 
 import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 
 export default function Home() {
   const [activeProduct, setActiveProduct] = useState(0);
   const autoPlayTimerRef = useRef<NodeJS.Timeout | null>(null);
   const resumeTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [filter, setFilter] = useState('all');
+  // 不跳转问题
+  const handleScroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (href.includes("#")) {
+      const id = href.split("#")[1];
+      const element = document.getElementById(id);
+
+      if (element) {
+        // 阻止 Next.js 默认的“无反应”行为
+        e.preventDefault(); 
+        
+        // 强制浏览器再次滚动到该位置
+        element.scrollIntoView({ behavior: "smooth", block: "start" });
+        
+        // 手动更新 URL 状态
+        window.history.pushState(null, "", href);
+      }
+    }
+  };
   // 1. 启动自动播放的函数
   const startAutoPlay = () => {
     stopAutoPlay(); // 先清理旧的，防止重叠
@@ -38,13 +57,39 @@ export default function Home() {
     return () => stopAutoPlay(); // 页面关掉时清理内存
   }, []);
 
+
+  //  新增：强制处理 Hash 跳转的逻辑
+  useEffect(() => {
+    // 定义执行滚动的函数
+    const handleHashScroll = () => {
+      const hash = window.location.hash;
+      if (hash) {
+        const id = hash.replace('#', '');
+        const element = document.getElementById(id);
+        if (element) {
+          // 稍微延迟 100ms 确保页面内容（如图片）已渲染
+          setTimeout(() => {
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 100);
+        }
+      }
+    };
+
+    // 监听 URL hash 变化
+    window.addEventListener('hashchange', handleHashScroll);
+    // 页面初次加载时也执行一次
+    handleHashScroll();
+
+    return () => window.removeEventListener('hashchange', handleHashScroll);
+  }, []);
+
   const navLinks = [
     { name: "首页", href: "#" },
     { name: "关于我们", href: "/about" },
-    { name: "技术服务", href: "#services" },
+    { name: "技术服务", href: "/services" },
     { name: "项目案例", href: "#portfolio" },
     { name: "客户评价", href: "#testimonials" },
-    { name: "联系我们", href: "#contact" },
+    { name: "联系我们", href: "/#contactus" },     //注意这里我改成了contactus，维护需要注意
   ];
 
 
@@ -119,6 +164,43 @@ export default function Home() {
         ]
       },
     ];
+    // 1. 在 Home 组件顶部定义状态
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    message: ''
+  });
+  const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+
+  // 2. 定义提交函数
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus('sending');
+
+    try {
+      const res = await fetch('/api/contactus', { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      if (res.ok) {
+        setStatus('success');
+        // 成功后清空表单，避免重复发送
+        setFormData({ name: '', phone: '', email: '', message: '' });
+        // 3秒后让按钮恢复原样，方便下一次点击
+        setTimeout(() => setStatus('idle'), 3000);
+      } else {
+        setStatus('error');
+      }
+    } catch (err) {
+      console.error("提交失败:", err);
+      setStatus('error');
+    }
+  };
+
+  
 
 
 
@@ -147,21 +229,22 @@ export default function Home() {
           <div className="flex items-center justify-end flex-1" style={{ gap: "30px", marginRight: "80px" }}>
             
             {/* 菜单列表 */}
-            <ul className="flex flex-row list-none m-0 p-0 text-base md:text-lg font-bold uppercase tracking-widest">
-              {navLinks.map((link) => (
-                <li key={link.name} style={{ marginRight: "40px" }}>
-                  
-                  {/* 🛡️ 核心修复：直接给 Link 强行指定绿色 text-[#38B44A] 和去下划线 no-underline */}
-                  <Link 
-                    href={link.href}
-                    className="text-[#38B44A] no-underline hover:brightness-150 cursor-pointer transition-all border-b-2 border-transparent hover:border-[#38B44A] pb-1 whitespace-nowrap block"
-                  >
-                    {link.name}
-                  </Link>
+          <ul className="flex flex-row list-none m-0 p-0 text-base md:text-lg font-bold uppercase tracking-widest">
+            {navLinks.map((link) => (
+              <li key={link.name} style={{ marginRight: "40px" }}>
+                
+                {/* 绑定 handleScroll 函数 */}
+                <Link 
+                  href={link.href}
+                  onClick={(e) => handleScroll(e, link.href)} 
+                  className="text-[#38B44A] no-underline hover:brightness-150 cursor-pointer transition-all border-b-2 border-transparent hover:border-[#38B44A] pb-1 whitespace-nowrap block"
+                >
+                  {link.name}
+                </Link>
 
-                </li>
-              ))}
-            </ul>
+              </li>
+            ))}
+          </ul>
             
             {/* 登录按钮 */}
             <Link 
@@ -361,8 +444,147 @@ export default function Home() {
           </div>
         </div>
       </section>
+      {/* --- 6. 联系我们 (首页模块版) --- */}
+<section id="contactus" className="py-20 bg-[#0B0E14] border-t border-[#38B44A]/10 relative overflow-hidden scroll-mt-32">
+  {/* 背景修饰：微弱的绿色光晕 */}
+  <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#38B44A]/5 rounded-full blur-[100px] -z-10"></div>
+  
+  <div className="container mx-auto px-6">
+    <div className="flex flex-col md:flex-row gap-16 items-start">
+      
+      {/* 🛡️ 左侧：联系信息（包含二维码区域） */}
+      <div className="w-full md:w-1/2">
+        <small className="font-black tracking-[0.3em] block mb-2 uppercase text-[#38B44A] opacity-80 text-[10px]">GET IN TOUCH</small>
+        <h3 className="text-4xl font-bold text-white mb-8">
+          与 <span className="text-[#38B44A]">格通科技</span> 取得联系
+        </h3>
+        
+        <div className="space-y-10">
+          {/* 地址 */}
+          <div className="flex items-start gap-4">
+            <div className="mt-1 w-10 h-10 rounded-lg bg-[#38B44A]/10 border border-[#38B44A]/30 flex items-center justify-center shrink-0">
+              <span className="text-[#38B44A]">📍</span>
+            </div>
+            <div>
+              <h5 className="text-white font-bold mb-1 text-sm">公司地址</h5>
+              <p className="text-[#38B44A]/70 text-xs leading-relaxed">
+                广东省深圳市龙华区民治街道北站社区<br />
+                龙华设计产业园总部大厦3栋1303<br />
+                邮编：518083
+              </p>
+            </div>
+          </div>
 
-      <footer id="contact" className="py-12 bg-[#0B0E14] border-t border-[#38B44A]/30 text-center text-[#38B44A] text-[10px] tracking-[0.2em]">
+          {/* 电话与邮件 */}
+          <div className="flex items-start gap-4">
+            <div className="mt-1 w-10 h-10 rounded-lg bg-[#38B44A]/10 border border-[#38B44A]/30 flex items-center justify-center shrink-0">
+              <span className="text-[#38B44A]">📞</span>
+            </div>
+            <div>
+              <h5 className="text-white font-bold mb-1 text-sm">联系方式</h5>
+              <p className="text-[#38B44A]/70 text-xs">
+                咨询热线：+86 (0755) 8888-6666<br />
+                企业邮箱：getongthz@gmail.com<br />
+                官方微信号：12312312
+              </p>
+            </div>
+          </div>
+
+          {/* 🛡️ 3. 关注我们：二维码展示区域 */}
+          <div className="flex items-start gap-4 pt-4 border-t border-[#38B44A]/10">
+            <div className="mt-1 w-10 h-10 rounded-lg bg-[#38B44A]/10 border border-[#38B44A]/30 flex items-center justify-center shrink-0">
+              <span className="text-[#38B44A]">📱</span>
+            </div>
+            <div>
+              <h5 className="text-white font-bold mb-4 text-sm">关注我们</h5>
+              <div className="flex gap-10">
+                {/* 微信公众号 */}
+                <div className="text-center group">
+                  <div className="w-50 h-50 bg-white p-1.5 rounded-xl mb-2 shadow-[0_0_20px_rgba(56,180,74,0.2)] transition-transform group-hover:scale-105 duration-300">
+                    <img 
+                      src="/images/qrcode.jpg" 
+                      alt="微信公众号" 
+                      className="w-full h-full object-cover" 
+                    />
+                  </div>
+                  <p className="text-[15px] font-bold text-[#38B44A]/60 tracking-tighter uppercase">官方微信公众号</p>
+                </div>
+
+                {/* 备用二维码 */}
+                <div className="text-center group">
+                  <div className="w-50 h-50 bg-white p-1.5 rounded-xl mb-2 shadow-[0_0_20px_rgba(56,180,74,0.2)] transition-transform group-hover:scale-105 duration-300">
+                    <img 
+                      src="/images/techqr.jpg" 
+                      alt="技术咨询" 
+                      className="w-full h-full object-cover" 
+                    />
+                  </div>
+                  <p className="text-[15px] font-bold text-[#38B44A]/60 tracking-tighter uppercase">技术专家咨询</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 右侧：快捷留言表单 */}
+      <div className="w-full md:w-1/2 bg-white/5 p-8 rounded-[32px] border border-[#38B44A]/20 backdrop-blur-sm shadow-2xl">
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input 
+              required
+              type="text" 
+              placeholder="您的姓名" 
+              value={formData.name}
+              onChange={(e) => setFormData({...formData, name: e.target.value})}
+              className="bg-black/40 border border-[#38B44A]/20 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-[#38B44A] transition-all"
+            />
+            <input 
+              required
+              type="text" 
+              placeholder="联系电话" 
+              value={formData.phone}
+              onChange={(e) => setFormData({...formData, phone: e.target.value})}
+              className="bg-black/40 border border-[#38B44A]/20 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-[#38B44A] transition-all"
+            />
+          </div>
+          <input 
+            required
+            type="email" 
+            placeholder="电子邮箱" 
+            value={formData.email}
+            onChange={(e) => setFormData({...formData, email: e.target.value})}
+            className="w-full bg-black/40 border border-[#38B44A]/20 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-[#38B44A] transition-all"
+          />
+          <textarea 
+            required
+            placeholder="请描述您的需求..." 
+            rows={4} 
+            value={formData.message}
+            onChange={(e) => setFormData({...formData, message: e.target.value})}
+            className="w-full bg-black/40 border border-[#38B44A]/20 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-[#38B44A] transition-all resize-none"
+          ></textarea>
+          
+          <button 
+            type="submit"
+            disabled={status === 'sending'}
+            className="w-full py-4 bg-[#38B44A] text-[#0B0E14] font-black rounded-xl hover:brightness-125 active:scale-[0.98] transition-all shadow-[0_0_20px_rgba(56,180,74,0.3)] disabled:opacity-50"
+          >
+            {status === 'sending' ? '正在发送...' : status === 'success' ? '✔ 发送成功' : '发送咨询需求'}
+          </button>
+          
+          {status === 'error' && <p className="text-red-500 text-xs text-center">发送失败，请稍后重试</p>}
+        </form>
+      </div>
+
+    </div>
+  </div>
+</section>      
+
+
+
+      <footer  className="py-12 bg-[#0B0E14] border-t border-[#38B44A]/30 text-center text-[#38B44A] text-[10px] tracking-[0.2em]">
         <p>© 2026 深圳格通太赫兹智能科技有限公司 GRIDLINK. ALL RIGHTS RESERVED.</p>
       </footer>
     </main>

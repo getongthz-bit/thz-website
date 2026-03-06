@@ -6,10 +6,10 @@ export default function AboutPage() {
   const navLinks = [
     { name: "首页", href: "/" },
     { name: "关于我们", href: "/about" },
-    { name: "技术服务", href: "/#services" },
+    { name: "技术服务", href: "/services" },
     { name: "项目案例", href: "/#portfolio" },
     { name: "客户评价", href: "/#testimonials" },
-    { name: "联系我们", href: "/#contact" },
+    { name: "联系我们", href: "/#contactus" },
   ];
 
   const honors = [
